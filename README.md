@@ -22,8 +22,8 @@ while (next != NULL) {
 #Dzen token
 A token represents a logical unit of the input string like a function, a text or a parameter. So the following example input `^fg(red)I'm red text ^fg(blue)I am blue` results in a list with 5 token of type:
 
-1) DZEN_TOKEN_TYPE_ROOT
-2) DZEN_TOKEN_TYPE_FUNCTION
-3) DZEN_TOKEN_TYPE_TEXT
-4) DZEN_TOKEN_TYPE_FUNCTION
-5) DZEN_TOKEN_TYPE_TEXT
+1. DZEN_TOKEN_TYPE_ROOT
+2. DZEN_TOKEN_TYPE_FUNCTION
+3. DZEN_TOKEN_TYPE_TEXT
+4. DZEN_TOKEN_TYPE_FUNCTION
+5. DZEN_TOKEN_TYPE_TEXT
