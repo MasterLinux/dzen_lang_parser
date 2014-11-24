@@ -1,6 +1,8 @@
 #ifndef DZEN_PARSER
 #define DZEN_PARSER
 
+#include <stdlib.h>
+
 #define DZEN_NOT_SET -1
 
 /**
@@ -38,7 +40,7 @@ typedef enum dzen_token_value_modifier {
 /**
  * A token which represents
  * a logical unit like a function
- * or a parameter
+ * or a parameter.
  */
 struct dzen_token {
     dzen_token_type type;
@@ -47,5 +49,10 @@ struct dzen_token {
     int integer_value;
     struct dzen_token *parameter_list;
 };
+
+/**
+ * De-allocates the given token and all its data.
+ */
+void dzen_token_destroy(struct dzen_token *token);
 
 #endif

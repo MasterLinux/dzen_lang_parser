@@ -20,7 +20,7 @@ dzen_list *dzen_list_create() {
 }
 
 void dzen_list_destroy_node(dzen_list_node *node, struct dzen_token *token) {
-    free(token);
+    dzen_token_destroy(token);
     free(node);
 }
 
