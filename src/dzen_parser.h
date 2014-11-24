@@ -29,11 +29,11 @@ typedef enum dzen_token_type {
  * used by a positioning parameter
  * token
  */
-typedef enum dzen_value_modifier {
+typedef enum dzen_token_value_modifier {
     DZEN_VALUE_MODIFIER_NONE,
     DZEN_VALUE_MODIFIER_INCREMENT,
     DZEN_VALUE_MODIFIER_DECREMNT
-} dzen_value_modifier;
+} dzen_token_value_modifier;
 
 /**
  * A token which represents
@@ -42,22 +42,10 @@ typedef enum dzen_value_modifier {
  */
 struct dzen_token {
     dzen_token_type type;
-    dzen_value_modifier value_modifier;
+    dzen_token_value_modifier value_modifier;
     char *string_value;
     int integer_value;
     struct dzen_token *parameter_list;
-
-    // pointer for iteration
-    struct dzen_token *previous_token;
-    struct dzen_token *next_token;
-
-    // the first token. if it is NULL
-    // this is the root token
-    struct dzen_token *first_token;
-
-    // the last token in the token list.
-    // if it is NULL this is the last token
-    struct dzen_token *last_token;
 };
 
 #endif
