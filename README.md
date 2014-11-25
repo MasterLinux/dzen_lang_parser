@@ -37,14 +37,41 @@ After working with the token list and an iterator you have to de-allocated these
 // free iterator and list
 dzen_list_iterator_destroy(it);
 
-// this call isn't required
+// this call isn't required anymore
 // dzen_list_destroy(list);
 ```
 
-#Dzen token
-A token represents a logical unit of the input string like a function, a text or a parameter. So the following example input `"^fg(red)I'm red text ^fg(blue)I am blue"` results in a list with 4 token of type:
+#Dzen language token
+A language token represents a logical unit of the input string like a function, a text or a parameter. So the following example input `"^fg(red)I'm red text ^fg(blue)I am blue"` results in a list with 4 token:
 
-1. Function `DZEN_TOKEN_TYPE_FUNCTION` \> `^fg(red)`
-2. Text `DZEN_TOKEN_TYPE_TEXT` \> `I'm red text `
-3. Function `DZEN_TOKEN_TYPE_FUNCTION` \> `^fg(blue)`
-4. Text `DZEN_TOKEN_TYPE_TEXT` \> `I am blue`
+1. Function \>\> `DZEN_TOKEN_TYPE_FUNCTION` \>\> `^fg(red)`
+2. Text \>\> `DZEN_TOKEN_TYPE_TEXT` \>\> `I'm red text `
+3. Function \>\> `DZEN_TOKEN_TYPE_FUNCTION` \>\> `^fg(blue)`
+4. Text \>\> `DZEN_TOKEN_TYPE_TEXT` \>\> `I am blue`
+
+##Token structure
+A token consists of the following information.
+
+```c
+struct dzen_lang_token {
+    dzen_token_type type;
+    dzen_token_value_modifier value_modifier;
+    char *value;
+    struct dzen_token *parameter_list;
+};
+```
+
+* `type`
+  * The type of the token like a function or a text
+* `value_modifier`
+  * A value modifier which is used as an additional info for the value
+  * For example this modifier is used to represent the `+` or `-` in the `^p(+-X)` function
+* `value`
+  * The value of the token, like the name of a function. Could be `NULL`
+* `parameter_list` 
+  * A list of parameter. Could be `NULL`
+  * This field is usually used for parameter with multiple info like the size parameter `2x3` where `2` is the first token in this list and `3` the second one   
+
+##Token types
+###Function
+A function consists of a name and a parameter list.
