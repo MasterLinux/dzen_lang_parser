@@ -1,6 +1,5 @@
 /**
- * A double linked list used to store
- * each found token
+ * A representation of a double linked list
  *
  * @author Christoph Grundmann
  */
@@ -32,6 +31,16 @@ typedef struct dzen_list {
 } dzen_list;
 
 /**
+ * Iterator used to iterate through a list
+ */
+typedef struct dzen_list_iterator {
+    int position;
+    dzen_list *list;
+    struct dzen_token *token;
+    dzen_list_node *current;
+} dzen_list_iterator;
+
+/**
  * Creates a new double linked list.
  *
  * @return The created list
@@ -55,21 +64,33 @@ void dzen_list_destroy(dzen_list *list);
 void dzen_list_add(dzen_list *list, struct dzen_token *token);
 
 /**
+ * Creates a new list iterator.
+ *
+ * @param list The list to iterate through
+ */
+dzen_list_iterator *dzen_list_iterator_create(dzen_list *list);
+
+/**
+ *  Destroys the given list iterator and its list.
+ */
+void dzen_list_iterator_destroy(dzen_list_iterator *iterator);
+
+/**
  * Iterates through the given list starting from
  * the first token to the last token.
  *
- * @param list The list to iterate through
- * @param on_next The callback function which is called for each token
+ * @param iterator The iterator which contains the list to iterate
+ * @return Return 0 if the iteration is done, otherwise 1
  */
-void dzen_list_iterate_forward(dzen_list *list, void (*on_next)(dzen_list_node *node, struct dzen_token *token));
+int dzen_list_iterate_forward(dzen_list_iterator *iterator);
 
 /**
 * Iterates through the given list starting from
 * the last token to the first token.
 *
-* @param list The list to iterate through
-* @param on_next The callback function which is called for each token
+* @param iterator The iterator which contains the list to iterate
+* @return Return 0 if the iteration is done, otherwise 1
 */
-void dzen_list_iterate_backward(dzen_list *list, void (*on_previous)(dzen_list_node *node, struct dzen_token *token));
+int dzen_list_iterate_backward(dzen_list_iterator *iterator);
 
 #endif
