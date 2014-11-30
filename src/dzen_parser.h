@@ -21,8 +21,8 @@ typedef enum dzen_token_type {
     DZEN_TOKEN_TYPE_COLOR_KEYWORD,
     DZEN_TOKEN_TYPE_HEX_COLOR,
     DZEN_TOKEN_TYPE_NAME_IDENTIFIER,
-    DZEN_TOKEN_TYPE_PLUS_OPERATOR,
-    DZEN_TOKEN_TYPE_MINUS_OPERATOR
+    DZEN_TOKEN_TYPE_INCREMENT_OPERATOR,
+    DZEN_TOKEN_TYPE_DECREMENT_OPERATOR
 } dzen_token_type;
 
 /**
@@ -43,10 +43,9 @@ typedef enum dzen_token_value_modifier {
  */
 struct dzen_token {
     dzen_token_type type;
-    dzen_token_value_modifier value_modifier;
-    char *string_value;
-    int integer_value;
+    dzen_token_value_modifier *value_modifier;
     struct dzen_token *parameter_list;
+    char *value;
 };
 
 /**
