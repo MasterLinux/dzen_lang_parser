@@ -55,7 +55,7 @@ A token consists of the following information.
 ```c
 struct dzen_lang_token {
     dzen_token_type type;
-    dzen_token_value_modifier value_modifier;
+    dzen_token_value_modifier *value_modifier;
     char *value;
     struct dzen_token *parameter_list;
 };
@@ -64,8 +64,8 @@ struct dzen_lang_token {
 * `type`
   * The type of the token like a function or a text
 * `value_modifier`
-  * A value modifier which is used as an additional info for the value
-  * For example this modifier is used to represent the `+` or `-` in the `^p(+-X)` function
+  * A list of value modifier. Could be `NULL`
+  * For example a modifier is used to represent the `+` or `-` in the `^p(+-X)` function
 * `value`
   * The value of the token, like the name of a function. Could be `NULL`
 * `parameter_list` 
