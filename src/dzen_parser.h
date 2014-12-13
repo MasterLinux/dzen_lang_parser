@@ -2,8 +2,49 @@
 #define DZEN_PARSER
 
 #include <stdlib.h>
+#include "dzen_list.h"
 
-#define DZEN_NOT_SET -1
+//------------ START: peg & leg defines ------------//
+
+#define YYSTYPE struct dzen_token
+
+#define YY_INPUT(buf, result, max_size)                          \
+                  {                                              \
+                    int yyc= dzen_parser_get_next_character();       \
+                    result= (EOF == yyc) ? 0 : (*(buf)= yyc, 1); \
+                  }
+
+//------------ END: peg & leg defines ------------//
+
+
+struct dzen_parser_cache;
+struct dzen_token;
+struct dzen_list;
+
+/**
+ * A parser cache required to read
+ * the input string
+ */
+typedef struct dzen_parser_cache {
+    int read_pos;
+    char *input;
+} dzen_parser_cache;
+
+/**
+ * Gets the next character of the input string
+ */
+int dzen_parser_get_next_character();
+
+/**
+ * Creates a new parser cache
+ * @param input The input string to parse
+ */
+dzen_parser_cache *dzen_parser_cache_create(char *input);
+
+/**
+ * Frees the given parser cache
+ */
+void dzen_parser_cache_destroy(dzen_parser_cache *cache);
 
 /**
  * Collection of each existing token type
@@ -41,16 +82,25 @@ typedef enum dzen_token_value_modifier {
  * a logical unit like a function
  * or a parameter.
  */
-struct dzen_token {
+typedef struct dzen_token {
     dzen_token_type type;
-    dzen_token_value_modifier *value_modifier;
-    struct dzen_token *parameter_list;
+    dzen_token_value_modifier value_modifier;
+    dzen_list *parameter_list;
     char *value;
-};
+} dzen_token;
 
 /**
- * De-allocates the given token and all its data.
+ * Creates a new language token.
  */
-void dzen_token_destroy(struct dzen_token *token);
+dzen_token *dzen_token_create(
+        dzen_token_type type,
+        dzen_token_value_modifier value_modifier,
+        dzen_list *parameter_list,
+        char *value);
+
+/**
+ * Frees the given language token and all its data.
+ */
+void dzen_token_destroy(dzen_token *token);
 
 #endif
