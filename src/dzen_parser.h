@@ -10,7 +10,7 @@
 
 #define YY_INPUT(buf, result, max_size)                          \
                   {                                              \
-                    int yyc= dzen_parser_get_next_character();       \
+                    int yyc= dzen_parser_get_next_character();   \
                     result= (EOF == yyc) ? 0 : (*(buf)= yyc, 1); \
                   }
 
@@ -102,5 +102,11 @@ dzen_token *dzen_token_create(
  * Frees the given language token and all its data.
  */
 void dzen_token_destroy(dzen_token *token);
+
+/**
+ * Parses the given input string
+ * @param input The input string to parse
+ */
+dzen_list *dzen_parse(char *input);
 
 #endif

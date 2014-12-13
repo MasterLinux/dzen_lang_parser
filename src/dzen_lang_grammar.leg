@@ -1,19 +1,28 @@
 %{
 #include "dzen_list.h"
 #include "dzen_parser.h"
+
+dzen_list *dzen_parser_token_list = dzen_list_create();
 %}
 
-Start                   = ( f:Function t:TEXT?  {
-                                                    add_to_token_list(f);
-                                                    add_to_token_list(t);
+Start                   = ( func_token:Function text_token:TEXT?  {
+                                                    dzen_list_add(dzen_parser_token_list, func_token);
+                                                    dzen_list_add(dzen_parser_token_list, text_token);
                                                 }
                         )+
 
 
 # functions with a name and a specific parameter type like ^name(2x2) or ^otherName(+4;-2)
-Function                = '^' id:NAME_IDENTIFIER WHITE_SPACES? '(' WHITE_SPACES? p:Parameter? WHITE_SPACES? ')'
+Function                = '^' name_token:NAME_IDENTIFIER WHITE_SPACES? '(' WHITE_SPACES? parameter_token:Parameter? WHITE_SPACES? ')'
 {
-    $$= MAKE_DZEN_FUNCTION_TOKEN(id.value, p.parameter_list);
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_FUNCTION,
+            DZEN_VALUE_MODIFIER_NONE,
+            parameter_token.parameter_list,
+            name_token.value
+    );
+
+    //TODO free name_token?
 }
 
 # each possible parameter type, see other parameter types below
@@ -25,15 +34,48 @@ Parameter               = SizeParameter
                         | HEX_COLOR
 
 # size parameter with a x and y coordinate like 2x2 or 2X2
-SizeParameter           = w:NUMBER DIMENSION_OPERATOR h:NUMBER
+SizeParameter           = width_token:NUMBER DIMENSION_OPERATOR height_token:NUMBER
 {
-    $$= MAKE_DZEN_SIZE_PARAMETER_TOKEN(w, h);
+    dzen_list *parameter_list = dzen_list_create();
+
+    dzen_list_add(parameter_list, width_token);
+    dzen_list_add(parameter_list, height_token);
+
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_SIZE_PARAMETER,
+            DZEN_VALUE_MODIFIER_NONE,
+            parameter_list,
+            NULL
+    );
 }
 
 # positioning parameter like +5, -5 or 5
-PositioningParameter    = o:MOVE_OPERATOR? p:NUMBER
+PositioningParameter    = operator_token:MOVE_OPERATOR? value_token:NUMBER
 {
-    $$= MAKE_DZEN_POSITIONING_PARAMETER_TOKEN(o.type, p);
+    dzen_token_value_modifier value_modifier; //TODO extract to helper func?
+
+    switch (operator_token.type) {
+        case DZEN_TOKEN_TYPE_INCREMENT_OPERATOR:
+            value_modifier = DZEN_VALUE_MODIFIER_INCREMENT;
+            break;
+
+        case DZEN_TOKEN_TYPE_DECREMENT_OPERATOR:
+            value_modifier = DZEN_VALUE_MODIFIER_DECREMNT;
+            break;
+
+        default:
+            value_modifier = DZEN_VALUE_MODIFIER_NONE;
+            break;
+    }
+
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_POSITIONING_PARAMETER,
+            value_modifier,
+            NULL,
+            value_token.value
+    );
+
+    //TODO free operator_token && value_token?
 }
 
 # a parameter list of positioning parameter like +4;-6 where the first parameter

@@ -12,6 +12,18 @@ char *clone_string(char *src_string) {
     return string_copy;
 }
 
+dzen_list *dzen_parse(char *input) {
+    parser_cache = dzen_parser_cache_create(input);
+
+    //parse input
+    while (yyparse());
+
+    dzen_parser_cache_destroy(parser_cache);
+    parser_cache = NULL;
+
+    return dzen_parser_token_list;
+}
+
 dzen_parser_cache *dzen_parser_cache_create(char *input) {
     dzen_parser_cache *cache = calloc(1, sizeof(dzen_parser_cache));
 
