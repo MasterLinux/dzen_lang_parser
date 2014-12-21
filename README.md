@@ -31,14 +31,15 @@ while (dzen_list_iterate_backward(it)) {
 ```
 
 ###The end
-After working with the token list and an iterator you have to de-allocated these. Whenever you use an iterator you can use `dzen_list_iterator_destroy(dzen_list_iterator *iterator)`. This function frees the list, too. So it isn't required to destroy the list also. If you don't use an iterator you can use 'dzen_list_destroy(dzen_list *list)' to destroy the list.
+After working with the token list and an iterator you have to de-allocated these. Whenever you use an iterator you can use `dzen_list_iterator_destroy(dzen_list_iterator *iterator)`. 
+This function frees the iterator only. So it is required to destroy the list also with the help of 'dzen_list_destroy(dzen_list *list)'.
 
 ```c
-// free iterator and list
-dzen_list_iterator_destroy(it);
+// free list first
+dzen_list_destroy(it->list);
 
-// this call isn't required anymore
-// dzen_list_destroy(list);
+// free iterator
+dzen_list_iterator_destroy(it);
 ```
 
 #Dzen language token

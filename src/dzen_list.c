@@ -7,6 +7,23 @@ dzen_list *dzen_list_create() {
     return calloc(1, sizeof(dzen_list));
 }
 
+dzen_list *dzen_list_copy(dzen_list *list) {
+    dzen_list *copy = NULL;
+
+    if(list != NULL) {
+        copy = dzen_list_create();
+        dzen_list_iterator *it = dzen_list_iterator_create(list);
+
+        while(dzen_list_iterate_forward(it)) {
+            dzen_list_add(copy, dzen_token_copy(it->current->token));
+        }
+
+        dzen_list_iterator_destroy(it);
+    }
+
+    return copy;
+}
+
 void dzen_list_destroy(dzen_list *list) {
     dzen_list_iterator *it = dzen_list_iterator_create(list);
 
@@ -51,7 +68,6 @@ dzen_list_iterator *dzen_list_iterator_create(dzen_list *list) {
 }
 
 void dzen_list_iterator_destroy(dzen_list_iterator *iterator) {
-    dzen_list_destroy(iterator->list);
     free(iterator);
 }
 

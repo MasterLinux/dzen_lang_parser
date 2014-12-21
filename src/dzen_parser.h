@@ -99,7 +99,16 @@ dzen_token *dzen_token_create(
         char *value);
 
 /**
+ * Makes a copy of the given token.
+ *
+ * @param token The token to copy
+ */
+dzen_token *dzen_token_copy(dzen_token *token);
+
+/**
  * Frees the given language token and all its data.
+ *
+ * @param token The token to destroy
  */
 void dzen_token_destroy(dzen_token *token);
 

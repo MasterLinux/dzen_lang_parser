@@ -48,6 +48,13 @@ typedef struct dzen_list_iterator {
 dzen_list *dzen_list_create();
 
 /**
+ * Makes a copy of the given list
+ *
+ * @param list The list to copy
+ */
+dzen_list *dzen_list_copy(dzen_list *list);
+
+/**
  * Destroys the given list. It de-allocates
  * the given list and its data.
  *
@@ -71,7 +78,10 @@ void dzen_list_add(dzen_list *list, struct dzen_token *token);
 dzen_list_iterator *dzen_list_iterator_create(dzen_list *list);
 
 /**
- *  Destroys the given list iterator and its list.
+ *  Destroys the given list iterator. The list must inside it must
+ *  be destroyed separately.
+ *
+ *  @param iterator The list iterator to destroy
  */
 void dzen_list_iterator_destroy(dzen_list_iterator *iterator);
 
@@ -80,7 +90,7 @@ void dzen_list_iterator_destroy(dzen_list_iterator *iterator);
  * the first token to the last token.
  *
  * @param iterator The iterator which contains the list to iterate
- * @return Return 0 if the iteration is done, otherwise 1
+ * @return Returns 0 if the iteration is done, otherwise 1
  */
 int dzen_list_iterate_forward(dzen_list_iterator *iterator);
 
@@ -89,7 +99,7 @@ int dzen_list_iterate_forward(dzen_list_iterator *iterator);
 * the last token to the first token.
 *
 * @param iterator The iterator which contains the list to iterate
-* @return Return 0 if the iteration is done, otherwise 1
+* @return Returns 0 if the iteration is done, otherwise 1
 */
 int dzen_list_iterate_backward(dzen_list_iterator *iterator);
 

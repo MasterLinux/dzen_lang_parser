@@ -22,7 +22,8 @@ Function                = '^' name_token:NAME_IDENTIFIER WHITE_SPACES? '(' WHITE
             name_token.value
     );
 
-    //TODO free name_token?
+    dzen_token_destroy(parameter_token);
+    dzen_token_destroy(name_token);
 }
 
 # each possible parameter type, see other parameter types below
@@ -47,12 +48,16 @@ SizeParameter           = width_token:NUMBER DIMENSION_OPERATOR height_token:NUM
             parameter_list,
             NULL
     );
+
+    dzen_list_destroy(parameter_list);
+    dzen_token_destroy(height_token);
+    dzen_token_destroy(width_token);
 }
 
 # positioning parameter like +5, -5 or 5
 PositioningParameter    = operator_token:MOVE_OPERATOR? value_token:NUMBER
 {
-    dzen_token_value_modifier value_modifier; //TODO extract to helper func?
+    dzen_token_value_modifier value_modifier;
 
     switch (operator_token.type) {
         case DZEN_TOKEN_TYPE_INCREMENT_OPERATOR:
@@ -60,7 +65,7 @@ PositioningParameter    = operator_token:MOVE_OPERATOR? value_token:NUMBER
             break;
 
         case DZEN_TOKEN_TYPE_DECREMENT_OPERATOR:
-            value_modifier = DZEN_VALUE_MODIFIER_DECREMNT;
+            value_modifier = DZEN_VALUE_MODIFIER_DECREMENT;
             break;
 
         default:
@@ -75,30 +80,31 @@ PositioningParameter    = operator_token:MOVE_OPERATOR? value_token:NUMBER
             value_token.value
     );
 
-    //TODO free operator_token && value_token?
+    dzen_token_destroy(operator_token);
+    dzen_token_destroy(value_token);
 }
 
 # a parameter list of positioning parameter like +4;-6 where the first parameter
 # represents the x parameter and the second one the y parameter
 PositioningParameterList    = x:PositioningParameter (WHITE_SPACES? ';' WHITE_SPACES? y:PositioningParameter)?
 {
-    $$= MAKE_DZEN_POSITIONING_PARAMETER_LIST_TOKEN(x, y);
+    $$= MAKE_DZEN_POSITIONING_PARAMETER_LIST_TOKEN(x, y); //TODO refactor
 }
                             | x:PositioningParameter? WHITE_SPACES? ';' WHITE_SPACES? y:PositioningParameter
 {
-    $$= MAKE_DZEN_POSITIONING_PARAMETER_LIST_TOKEN(x, y);
+    $$= MAKE_DZEN_POSITIONING_PARAMETER_LIST_TOKEN(x, y); //TODO refactor
 }
 
 # a name usually used for function names like fg or bg
 NAME_IDENTIFIER         = < [a-zA-Z]+ >
 {
-    $$= MAKE_DZEN_NAME_IDENTIFIER_TOKEN(yytext);
+    $$= MAKE_DZEN_NAME_IDENTIFIER_TOKEN(yytext); //TODO refactor
 }
 
 # any text which is displayed
 TEXT                    = < [a-zA-Z_0-9 ]+ >
 {
-    $$= MAKE_DZEN_TEXT_TOKEN(yytext);
+    $$= MAKE_DZEN_TEXT_TOKEN(yytext); //TODO refactor
 }
 
 FILE_EXTENSION          = '.' [a-zA-Z]+
@@ -106,18 +112,18 @@ FILE_EXTENSION          = '.' [a-zA-Z]+
 # represents a file path
 FILE_PATH               = < ('./' | '../')* [a-zA-Z0-9_/]+ FILE_EXTENSION >
 {
-    $$= MAKE_DZEN_FILE_PATH_TOKEN(yytext);
+    $$= MAKE_DZEN_FILE_PATH_TOKEN(yytext); //TODO refactor
 }
 
 # a constant like _TOP
 CONSTANT                = < '_' [A-Z]+ >
 {
-    $$= MAKE_DZEN_CONSTANT_TOKEN(yytext);
+    $$= MAKE_DZEN_CONSTANT_TOKEN(yytext); //TODO refactor
 }
 
 NUMBER                  = < [0-9]+ >
 {
-    $$= MAKE_DZEN_NUMBER_TOKEN(atoi(yytext));
+    $$= MAKE_DZEN_NUMBER_TOKEN(atoi(yytext)); //TODO refactor
 }
 
 DIMENSION_OPERATOR      = 'x' | 'X'
@@ -134,13 +140,13 @@ HEX_COLOR_RGBA          = '#' [a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-
 # representaion of a hex color like #FFF, #FF0000 or #FFFF00FF
 HEX_COLOR               = < HEX_COLOR_RGBA | HEX_COLOR_SIX_DIGIT | HEX_COLOR_THREE_DIGIT >
 {
-    $$= MAKE_DZEN_HEX_COLOR_TOKEN(yytext);
+    $$= MAKE_DZEN_HEX_COLOR_TOKEN(yytext); //TODO refactor
 }
 
 # list of colors as keyword
-COLOR_KEYWORD           = < 'red' >     { $$= MAKE_DZEN_COLOR_KEYWORD_TOKEN(yytext); }
-                        | < 'yellow' >  { $$= MAKE_DZEN_COLOR_KEYWORD_TOKEN(yytext); }
-                        | < 'orange' >  { $$= MAKE_DZEN_COLOR_KEYWORD_TOKEN(yytext); }
+COLOR_KEYWORD           = < 'red' >     { $$= MAKE_DZEN_COLOR_KEYWORD_TOKEN(yytext); } //TODO refactor
+                        | < 'yellow' >  { $$= MAKE_DZEN_COLOR_KEYWORD_TOKEN(yytext); } //TODO refactor
+                        | < 'orange' >  { $$= MAKE_DZEN_COLOR_KEYWORD_TOKEN(yytext); } //TODO refactor
 
 INCREMENT_OPERATOR      = '+'
 DECREMENT_OPERATOR      = '-'

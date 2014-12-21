@@ -5,11 +5,15 @@
 static dzen_parser_cache* parser_cache = NULL;
 
 
-char *clone_string(char *src_string) {
-    char *string_copy = (char *)malloc(sizeof(char) * strlen(src_string));
-    strcpy(string_copy, src_string);
+char *string_copy(char *str) {
+    char *copy = NULL;
 
-    return string_copy;
+    if(str != NULL) {
+        copy = (char *)malloc(sizeof(char) * strlen(str));
+        strcpy(copy, str);
+    }
+
+    return copy;
 }
 
 dzen_list *dzen_parse(char *input) {
@@ -27,7 +31,7 @@ dzen_list *dzen_parse(char *input) {
 dzen_parser_cache *dzen_parser_cache_create(char *input) {
     dzen_parser_cache *cache = calloc(1, sizeof(dzen_parser_cache));
 
-    cache->input = clone_string(input);
+    cache->input = string_copy(input);
     cache->read_pos = 0;
 
     return cache;
@@ -55,11 +59,26 @@ dzen_token *dzen_token_create(dzen_token_type type, dzen_token_value_modifier va
     dzen_token *token = calloc(1, sizeof(dzen_token));
 
     token->value_modifier = value_modifier;
-    token->parameter_list = parameter_list;
-    token->value = clone_string(value);
+    token->parameter_list = dzen_list_copy(parameter_list);
+    token->value = string_copy(value);
     token->type = type;
 
     return token;
+}
+
+dzen_token *dzen_token_copy(dzen_token *token) {
+    dzen_token *copy = NULL;
+
+    if(token != NULL) {
+        copy = calloc(1, sizeof(dzen_token));
+
+        token->value_modifier = token->value_modifier;
+        token->parameter_list = dzen_list_copy(token->parameter_list);
+        token->value = string_copy(token->value);
+        token->type = token->type;
+    }
+
+    return copy;
 }
 
 void dzen_token_destroy(dzen_token *token) {
