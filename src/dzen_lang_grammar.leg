@@ -86,25 +86,45 @@ PositioningParameter    = operator_token:MOVE_OPERATOR? value_token:NUMBER
 
 # a parameter list of positioning parameter like +4;-6 where the first parameter
 # represents the x parameter and the second one the y parameter
-PositioningParameterList    = x:PositioningParameter (WHITE_SPACES? ';' WHITE_SPACES? y:PositioningParameter)?
+PositioningParameterList    = x_positioning_token:PositioningParameter WHITE_SPACES? (';' WHITE_SPACES? y_positioning_token:PositioningParameter)?
 {
-    $$= MAKE_DZEN_POSITIONING_PARAMETER_LIST_TOKEN(x, y); //TODO refactor
-}
-                            | x:PositioningParameter? WHITE_SPACES? ';' WHITE_SPACES? y:PositioningParameter
-{
-    $$= MAKE_DZEN_POSITIONING_PARAMETER_LIST_TOKEN(x, y); //TODO refactor
+    dzen_list *parameter_list = dzen_list_create();
+
+    dzen_list_add(parameter_list, x_positioning_token);
+    dzen_list_add(parameter_list, y_positioning_token);
+
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_POSITIONING_PARAMETER_LIST,
+            DZEN_VALUE_MODIFIER_NONE,
+            parameter_list,
+            NULL
+    );
+
+    dzen_list_destroy(parameter_list);
+    dzen_token_destroy(x_positioning_token);
+    dzen_token_destroy(y_positioning_token);
 }
 
 # a name usually used for function names like fg or bg
 NAME_IDENTIFIER         = < [a-zA-Z]+ >
 {
-    $$= MAKE_DZEN_NAME_IDENTIFIER_TOKEN(yytext); //TODO refactor
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_NAME_IDENTIFIER,
+            DZEN_VALUE_MODIFIER_NONE,
+            NULL,
+            yytext
+    );
 }
 
 # any text which is displayed
 TEXT                    = < [a-zA-Z_0-9 ]+ >
 {
-    $$= MAKE_DZEN_TEXT_TOKEN(yytext); //TODO refactor
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_TEXT,
+            DZEN_VALUE_MODIFIER_NONE,
+            NULL,
+            yytext
+    );
 }
 
 FILE_EXTENSION          = '.' [a-zA-Z]+
@@ -112,24 +132,39 @@ FILE_EXTENSION          = '.' [a-zA-Z]+
 # represents a file path
 FILE_PATH               = < ('./' | '../')* [a-zA-Z0-9_/]+ FILE_EXTENSION >
 {
-    $$= MAKE_DZEN_FILE_PATH_TOKEN(yytext); //TODO refactor
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_FILE_PATH,
+            DZEN_VALUE_MODIFIER_NONE,
+            NULL,
+            yytext
+    );
 }
 
 # a constant like _TOP
 CONSTANT                = < '_' [A-Z]+ >
 {
-    $$= MAKE_DZEN_CONSTANT_TOKEN(yytext); //TODO refactor
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_CONSTANT,
+            DZEN_VALUE_MODIFIER_NONE,
+            NULL,
+            yytext
+    );
 }
 
 NUMBER                  = < [0-9]+ >
 {
-    $$= MAKE_DZEN_NUMBER_TOKEN(atoi(yytext)); //TODO refactor
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_NUMBER,
+            DZEN_VALUE_MODIFIER_NONE,
+            NULL,
+            yytext
+    );
 }
 
 DIMENSION_OPERATOR      = 'x' | 'X'
 
-MOVE_OPERATOR           = INCREMENT_OPERATOR { $$= DZEN_PLUS_OPERATOR_TOKEN }
-                        | DECREMENT_OPERATOR { $$= DZEN_MINUS_OPERATOR_TOKEN }
+MOVE_OPERATOR           = INCREMENT_OPERATOR
+                        | DECREMENT_OPERATOR
 
 HEX_COLOR_THREE_DIGIT   = '#' [a-fA-F0-9][a-fA-F0-9][a-fA-F0-9];
 HEX_COLOR_SIX_DIGIT     = '#' [a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9];
@@ -140,15 +175,37 @@ HEX_COLOR_RGBA          = '#' [a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-
 # representaion of a hex color like #FFF, #FF0000 or #FFFF00FF
 HEX_COLOR               = < HEX_COLOR_RGBA | HEX_COLOR_SIX_DIGIT | HEX_COLOR_THREE_DIGIT >
 {
-    $$= MAKE_DZEN_HEX_COLOR_TOKEN(yytext); //TODO refactor
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_HEX_COLOR,
+            DZEN_VALUE_MODIFIER_NONE,
+            NULL,
+            yytext
+    );
 }
 
 # list of colors as keyword
-COLOR_KEYWORD           = < 'red' >     { $$= MAKE_DZEN_COLOR_KEYWORD_TOKEN(yytext); } //TODO refactor
-                        | < 'yellow' >  { $$= MAKE_DZEN_COLOR_KEYWORD_TOKEN(yytext); } //TODO refactor
-                        | < 'orange' >  { $$= MAKE_DZEN_COLOR_KEYWORD_TOKEN(yytext); } //TODO refactor
+COLOR_KEYWORD           = < 'red' >     { $$= dzen_token_create(DZEN_TOKEN_TYPE_COLOR_KEYWORD, DZEN_VALUE_MODIFIER_NONE, NULL, yytext); }
+                        | < 'yellow' >  { $$= dzen_token_create(DZEN_TOKEN_TYPE_COLOR_KEYWORD, DZEN_VALUE_MODIFIER_NONE, NULL, yytext); }
+                        | < 'orange' >  { $$= dzen_token_create(DZEN_TOKEN_TYPE_COLOR_KEYWORD, DZEN_VALUE_MODIFIER_NONE, NULL, yytext); }
 
 INCREMENT_OPERATOR      = '+'
+{
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_INCREMENT_OPERATOR,
+            DZEN_VALUE_MODIFIER_NONE,
+            NULL,
+            NULL
+    );
+}
+
 DECREMENT_OPERATOR      = '-'
+{
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_DECREMENT_OPERATOR,
+            DZEN_VALUE_MODIFIER_NONE,
+            NULL,
+            NULL
+    );
+}
 
 WHITE_SPACES            = ' '+
