@@ -26,9 +26,9 @@ static char *test_should_create_and_destroy_list() {
 static char *test_should_add_token_to_list() {
     dzen_list *list_under_test = dzen_list_create();
 
-    char *expected_string_value = "test";
+    char *expected_value = "test";
     struct dzen_token *token_under_test = calloc(1, sizeof(struct dzen_token));
-    token_under_test->string_value = expected_string_value;
+    token_under_test->value = expected_value;
 
     mu_assert("error, list is NULL", list_under_test != NULL);
     mu_assert("error, token is NULL", token_under_test != NULL);
@@ -48,15 +48,15 @@ static char *test_should_iterate_through_list() {
 
     char *expected_string_value = "test";
     struct dzen_token *token_under_test = calloc(1, sizeof(struct dzen_token));
-    token_under_test->string_value = expected_string_value;
+    token_under_test->value = expected_string_value;
 
     char *expected_string_value_2 = "another_test";
     struct dzen_token *token_under_test_2 = calloc(1, sizeof(struct dzen_token));
-    token_under_test_2->string_value = expected_string_value_2;
+    token_under_test_2->value = expected_string_value_2;
 
     char *expected_string_value_3 = "yet_another_test";
     struct dzen_token *token_under_test_3 = calloc(1, sizeof(struct dzen_token));
-    token_under_test_3->string_value = expected_string_value_3;
+    token_under_test_3->value = expected_string_value_3;
 
     dzen_list_add(list_under_test, token_under_test);
     dzen_list_add(list_under_test, token_under_test_2);
@@ -70,7 +70,7 @@ static char *test_should_iterate_through_list() {
 
     int i = 0;
     while (dzen_list_iterate_backward(it)) {
-        node_string_values[i] = it->token->string_value;
+        node_string_values[i] = it->token->value;
         node_pos[i] = it->position;
         ++i;
     }
@@ -84,7 +84,7 @@ static char *test_should_iterate_through_list() {
 
     i = 0;
     while (dzen_list_iterate_forward(it)) {
-        node_string_values[i] = it->token->string_value;
+        node_string_values[i] = it->token->value;
         node_pos[i] = it->position;
         ++i;
     }
