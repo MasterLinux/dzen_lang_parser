@@ -28,7 +28,7 @@ Function                = '^' name_token:NAME_IDENTIFIER WHITE_SPACES? '(' WHITE
 
 # each possible parameter type, see other parameter types below
 Parameter               = SizeParameter
-                        | PositioningParameterList
+                        | CoordinateParameter
                         | CONSTANT
                         | FILE_PATH
                         | COLOR_KEYWORD
@@ -37,21 +37,7 @@ Parameter               = SizeParameter
 # size parameter with a x and y coordinate like 2x2 or 2X2
 SizeParameter           = width_token:NUMBER DIMENSION_OPERATOR height_token:NUMBER
 {
-    dzen_list *parameter_list = dzen_list_create();
-
-    dzen_list_add(parameter_list, width_token);
-    dzen_list_add(parameter_list, height_token);
-
-    $$= dzen_token_create(
-            DZEN_TOKEN_TYPE_SIZE_PARAMETER,
-            DZEN_VALUE_MODIFIER_NONE,
-            parameter_list,
-            NULL
-    );
-
-    dzen_list_destroy(parameter_list);
-    dzen_token_destroy(height_token);
-    dzen_token_destroy(width_token);
+    $$= dzen_token_create_size_parameter(width_token, height_token);
 }
 
 # positioning parameter like +5, -5 or 5
@@ -73,58 +59,29 @@ PositioningParameter    = operator_token:MOVE_OPERATOR? value_token:NUMBER
             break;
     }
 
-    $$= dzen_token_create(
-            DZEN_TOKEN_TYPE_POSITIONING_PARAMETER,
-            value_modifier,
-            NULL,
-            value_token.value
-    );
+    $$= dzen_token_create_positioning_parameter(value_modifier, value_token.value);
 
     dzen_token_destroy(operator_token);
     dzen_token_destroy(value_token);
 }
 
-# a parameter list of positioning parameter like +4;-6 where the first parameter
-# represents the x parameter and the second one the y parameter
-PositioningParameterList    = x_positioning_token:PositioningParameter WHITE_SPACES? (';' WHITE_SPACES? y_positioning_token:PositioningParameter)?
+# a coordinate parameter like +4;-6 where the first parameter
+# represents the x coordinate and the second one the y coordinate
+CoordinateParameter    = x_positioning_token:PositioningParameter WHITE_SPACES? (';' WHITE_SPACES? y_positioning_token:PositioningParameter)?
 {
-    dzen_list *parameter_list = dzen_list_create();
-
-    dzen_list_add(parameter_list, x_positioning_token);
-    dzen_list_add(parameter_list, y_positioning_token);
-
-    $$= dzen_token_create(
-            DZEN_TOKEN_TYPE_POSITIONING_PARAMETER_LIST,
-            DZEN_VALUE_MODIFIER_NONE,
-            parameter_list,
-            NULL
-    );
-
-    dzen_list_destroy(parameter_list);
-    dzen_token_destroy(x_positioning_token);
-    dzen_token_destroy(y_positioning_token);
+    $$= dzen_token_create_coordinate_parameter(x_positioning_token, y_positioning_token);
 }
 
 # a name usually used for function names like fg or bg
 NAME_IDENTIFIER         = < [a-zA-Z]+ >
 {
-    $$= dzen_token_create(
-            DZEN_TOKEN_TYPE_NAME_IDENTIFIER,
-            DZEN_VALUE_MODIFIER_NONE,
-            NULL,
-            yytext
-    );
+    $$= dzen_token_create_identifier(yytext);
 }
 
 # any text which is displayed
 TEXT                    = < [a-zA-Z_0-9 ]+ >
 {
-    $$= dzen_token_create(
-            DZEN_TOKEN_TYPE_TEXT,
-            DZEN_VALUE_MODIFIER_NONE,
-            NULL,
-            yytext
-    );
+    $$= dzen_token_create_text(yytext);
 }
 
 FILE_EXTENSION          = '.' [a-zA-Z]+
@@ -132,33 +89,18 @@ FILE_EXTENSION          = '.' [a-zA-Z]+
 # represents a file path
 FILE_PATH               = < ('./' | '../')* [a-zA-Z0-9_/]+ FILE_EXTENSION >
 {
-    $$= dzen_token_create(
-            DZEN_TOKEN_TYPE_FILE_PATH,
-            DZEN_VALUE_MODIFIER_NONE,
-            NULL,
-            yytext
-    );
+    $$= dzen_token_create_file_path(yytext);
 }
 
 # a constant like _TOP
 CONSTANT                = < '_' [A-Z]+ >
 {
-    $$= dzen_token_create(
-            DZEN_TOKEN_TYPE_CONSTANT,
-            DZEN_VALUE_MODIFIER_NONE,
-            NULL,
-            yytext
-    );
+    $$= dzen_token_create_constant(yytext);
 }
 
 NUMBER                  = < [0-9]+ >
 {
-    $$= dzen_token_create(
-            DZEN_TOKEN_TYPE_NUMBER,
-            DZEN_VALUE_MODIFIER_NONE,
-            NULL,
-            yytext
-    );
+    $$= dzen_token_create_number(yytext);
 }
 
 DIMENSION_OPERATOR      = 'x' | 'X'
@@ -175,37 +117,16 @@ HEX_COLOR_RGBA          = '#' [a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-
 # representaion of a hex color like #FFF, #FF0000 or #FFFF00FF
 HEX_COLOR               = < HEX_COLOR_RGBA | HEX_COLOR_SIX_DIGIT | HEX_COLOR_THREE_DIGIT >
 {
-    $$= dzen_token_create(
-            DZEN_TOKEN_TYPE_HEX_COLOR,
-            DZEN_VALUE_MODIFIER_NONE,
-            NULL,
-            yytext
-    );
+    $$= dzen_token_create_hex_color(yytext);
 }
 
 # list of colors as keyword
-COLOR_KEYWORD           = < 'red' >     { $$= dzen_token_create(DZEN_TOKEN_TYPE_COLOR_KEYWORD, DZEN_VALUE_MODIFIER_NONE, NULL, yytext); }
-                        | < 'yellow' >  { $$= dzen_token_create(DZEN_TOKEN_TYPE_COLOR_KEYWORD, DZEN_VALUE_MODIFIER_NONE, NULL, yytext); }
-                        | < 'orange' >  { $$= dzen_token_create(DZEN_TOKEN_TYPE_COLOR_KEYWORD, DZEN_VALUE_MODIFIER_NONE, NULL, yytext); }
+COLOR_KEYWORD           = < 'red' >     { $$= dzen_token_create_color(yytext); }
+                        | < 'yellow' >  { $$= dzen_token_create_color(yytext); }
+                        | < 'orange' >  { $$= dzen_token_create_color(yytext); }
 
-INCREMENT_OPERATOR      = '+'
-{
-    $$= dzen_token_create(
-            DZEN_TOKEN_TYPE_INCREMENT_OPERATOR,
-            DZEN_VALUE_MODIFIER_NONE,
-            NULL,
-            NULL
-    );
-}
+INCREMENT_OPERATOR      = '+' { $$= dzen_token_create_increment_operator(); }
 
-DECREMENT_OPERATOR      = '-'
-{
-    $$= dzen_token_create(
-            DZEN_TOKEN_TYPE_DECREMENT_OPERATOR,
-            DZEN_VALUE_MODIFIER_NONE,
-            NULL,
-            NULL
-    );
-}
+DECREMENT_OPERATOR      = '-' { $$= dzen_token_create_decrement_operator(); }
 
 WHITE_SPACES            = ' '+
