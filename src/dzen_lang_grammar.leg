@@ -1,0 +1,132 @@
+%{
+#include "dzen_list.h"
+#include "dzen_parser.h"
+
+dzen_list *dzen_parser_token_list = dzen_list_create();
+%}
+
+Start                   = ( func_token:Function text_token:TEXT?  {
+                                                    dzen_list_add(dzen_parser_token_list, func_token);
+                                                    dzen_list_add(dzen_parser_token_list, text_token);
+                                                }
+                        )+
+
+
+# functions with a name and a specific parameter type like ^name(2x2) or ^otherName(+4;-2)
+Function                = '^' name_token:NAME_IDENTIFIER WHITE_SPACES? '(' WHITE_SPACES? parameter_token:Parameter? WHITE_SPACES? ')'
+{
+    $$= dzen_token_create(
+            DZEN_TOKEN_TYPE_FUNCTION,
+            DZEN_VALUE_MODIFIER_NONE,
+            parameter_token.parameter_list,
+            name_token.value
+    );
+
+    dzen_token_destroy(parameter_token);
+    dzen_token_destroy(name_token);
+}
+
+# each possible parameter type, see other parameter types below
+Parameter               = SizeParameter
+                        | CoordinateParameter
+                        | CONSTANT
+                        | FILE_PATH
+                        | COLOR_KEYWORD
+                        | HEX_COLOR
+
+# size parameter with a x and y coordinate like 2x2 or 2X2
+SizeParameter           = width_token:NUMBER DIMENSION_OPERATOR height_token:NUMBER
+{
+    $$= dzen_token_create_size_parameter(width_token, height_token);
+}
+
+# positioning parameter like +5, -5 or 5
+PositioningParameter    = operator_token:MOVE_OPERATOR? value_token:NUMBER
+{
+    dzen_token_value_modifier value_modifier;
+
+    switch (operator_token.type) {
+        case DZEN_TOKEN_TYPE_INCREMENT_OPERATOR:
+            value_modifier = DZEN_VALUE_MODIFIER_INCREMENT;
+            break;
+
+        case DZEN_TOKEN_TYPE_DECREMENT_OPERATOR:
+            value_modifier = DZEN_VALUE_MODIFIER_DECREMENT;
+            break;
+
+        default:
+            value_modifier = DZEN_VALUE_MODIFIER_NONE;
+            break;
+    }
+
+    $$= dzen_token_create_positioning_parameter(value_modifier, value_token.value);
+
+    dzen_token_destroy(operator_token);
+    dzen_token_destroy(value_token);
+}
+
+# a coordinate parameter like +4;-6 where the first parameter
+# represents the x coordinate and the second one the y coordinate
+CoordinateParameter    = x_positioning_token:PositioningParameter WHITE_SPACES? (';' WHITE_SPACES? y_positioning_token:PositioningParameter)?
+{
+    $$= dzen_token_create_coordinate_parameter(x_positioning_token, y_positioning_token);
+}
+
+# a name usually used for function names like fg or bg
+NAME_IDENTIFIER         = < [a-zA-Z]+ >
+{
+    $$= dzen_token_create_identifier(yytext);
+}
+
+# any text which is displayed
+TEXT                    = < [a-zA-Z_0-9 ]+ >
+{
+    $$= dzen_token_create_text(yytext);
+}
+
+FILE_EXTENSION          = '.' [a-zA-Z]+
+
+# represents a file path
+FILE_PATH               = < ('./' | '../')* [a-zA-Z0-9_/]+ FILE_EXTENSION >
+{
+    $$= dzen_token_create_file_path(yytext);
+}
+
+# a constant like _TOP
+CONSTANT                = < '_' [A-Z]+ >
+{
+    $$= dzen_token_create_constant(yytext);
+}
+
+NUMBER                  = < [0-9]+ >
+{
+    $$= dzen_token_create_number(yytext);
+}
+
+DIMENSION_OPERATOR      = 'x' | 'X'
+
+MOVE_OPERATOR           = INCREMENT_OPERATOR
+                        | DECREMENT_OPERATOR
+
+HEX_COLOR_THREE_DIGIT   = '#' [a-fA-F0-9][a-fA-F0-9][a-fA-F0-9];
+HEX_COLOR_SIX_DIGIT     = '#' [a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9];
+
+# a hex color with alpha
+HEX_COLOR_RGBA          = '#' [a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9];
+
+# representaion of a hex color like #FFF, #FF0000 or #FFFF00FF
+HEX_COLOR               = < HEX_COLOR_RGBA | HEX_COLOR_SIX_DIGIT | HEX_COLOR_THREE_DIGIT >
+{
+    $$= dzen_token_create_hex_color(yytext);
+}
+
+# list of colors as keyword
+COLOR_KEYWORD           = < 'red' >     { $$= dzen_token_create_color(yytext); }
+                        | < 'yellow' >  { $$= dzen_token_create_color(yytext); }
+                        | < 'orange' >  { $$= dzen_token_create_color(yytext); }
+
+INCREMENT_OPERATOR      = '+' { $$= dzen_token_create_increment_operator(); }
+
+DECREMENT_OPERATOR      = '-' { $$= dzen_token_create_decrement_operator(); }
+
+WHITE_SPACES            = ' '+
